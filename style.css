@@ -9,10 +9,19 @@ header.stAppHeader {
 	background-color: transparent;
 }
 section.stMain .block-container {
-	padding-top: 3rem;
+	padding-top: 2rem;
 	z-index: 1;
 }
 
 [data-testid="stDecoration"] {
 	background: #ffffff;
+}
+
+[data-testid="stNumberInputContainer"] {
+	border: 1px solid;
+	border-color: #ebebeb;
+	transition: opacity 0.3s ease, border-color 0.3s ease;
+}
+[data-testid="stNumberInputContainer"]:focus-within {
+	border-color: #d7d46d;
 }

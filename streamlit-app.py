@@ -56,7 +56,7 @@ with st.sidebar:
 
         subcol1, subcol2 = st.columns(2)
         with subcol1:
-            home_cost = st.number_input("Home Purchase Price ($)", value=800000, step=10000, )
+            home_cost = st.number_input("Home Price ($)", value=800000, step=10000, )
             interest_rate = st.number_input("Interest Rate (%)", min_value=0.0, max_value=100.0, format="%.1f", value=7.0, step=0.5)
         with subcol2:
             down_payment = st.number_input("Down Payment (%)", min_value=0, max_value=100,  value=20, step=1)
@@ -67,7 +67,7 @@ with st.sidebar:
         with subcol1:
             rent = st.number_input("Monthly Rent ($)", value=2500, step = 100)
         with subcol2:
-            rent_increase = st.number_input("Rent Increase after Inflation (%)", min_value=0.0, max_value=100.0, format="%.1f", value=1.0, step = 0.5)
+            rent_increase = st.number_input("Rent Increase (%)", min_value=0.0, max_value=100.0, format="%.1f", value=1.0, step = 0.5, help="Annual rent increase after inflation.")
     with st.expander("Advanced Options"): 
         st.markdown("**Macro**")
         subcol1, subcol2 = st.columns(2)
@@ -75,8 +75,9 @@ with st.sidebar:
             inflation = st.number_input("Inflation Rate (%)", min_value=0.0, max_value=100.0, format="%.1f", value=3.0, step=0.5)
             home_price_appreciation = st.number_input("Home Price Appreciation After Inflation (%)", min_value=0.0, max_value=100.0, format="%.1f", value=1.0, step=0.5)
         with subcol2:
-            investment_growth = st.number_input("Average Investment Growth (%)", min_value=0.0, max_value=100.0, format="%.1f", value=7.0, step = 0.5, help="Average annual return on investment portfolio after inflation.")
             loan_term_years = st.number_input("Loan Term (years)", step=5, value=30, min_value=15)  # Assuming a 30-year mortgage
+            investment_growth = st.number_input("Average Investment Growth (%)", min_value=0.0, max_value=100.0, format="%.1f", value=7.0, step = 0.5, help="Average annual return on investment portfolio after inflation.")
+
     st.caption('Note: I built this one afternoon - please flag any bugs or issues! Send all thoughts and feedback to [Charlotte](https://bsky.app/profile/cmcclintock.bsky.social)!')
  
 
@@ -198,6 +199,7 @@ with tab1:
         .applymap(lambda x: 'color: #406F0F', subset=["Investment: Rent + Re-invest"])
     )
 
+
     st.dataframe(format_df, height=220)
 
     st.divider()
@@ -217,10 +219,13 @@ with tab1:
     # Melt the max price dataframe to long format for the chart
     max_price_buy_better_long = max_price_buy_better.melt(id_vars=['scenario_home_price'], value_vars=['Investment: Buy', 'Investment: Rent', 'Investment: Rent + Re-invest'], var_name='Type', value_name='Investment')
 
+    # remove investment: from typ
+    max_price_buy_better_long['Type'] = max_price_buy_better_long['Type'].str.replace("Investment: ", "")
+
     homepricecol1, homepricecol2 = st.columns([3,5])
     with homepricecol1:
         st.markdown("**Max Home Price where Buying > Renting**")
-        st.markdown(f"The home price maximum below is the highest home price (given the input parameters) where the total investment value of buying a home exceeds renting and reinvesting over {loan_term_years} years. ")
+        st.markdown(f"The home price maximum below is the highest home price (given the input parameters) where the total investment value of buying a home exceeds renting and reinvesting over {loan_term_years} years.  ")
 
         st.metric('Max Home Price Where Buying > Renting', f"${first_scenario['scenario_home_price']:,.0f}")
 
@@ -231,7 +236,7 @@ with tab1:
         max_price_chart = alt.Chart(max_price_buy_better_long).mark_line(point=True).encode(
             x=alt.X('scenario_home_price:Q', title='Home Price ($)', axis=alt.Axis(format='$,.0f')),
             y=alt.Y('Investment:Q', title='Investment Value ($)', axis=alt.Axis(format='$,.0f')),
-            color=alt.Color('Type:N', title='scenario', scale=alt.Scale(domain=['Investment: Buy', 'Investment: Rent', 'Investment: Rent + Re-invest'], range=['#E76C7E', '#D7D46D', '#406F0F'])),
+            color=alt.Color('Type:N', title='scenario', scale=alt.Scale(domain=['Buy', 'Rent', 'Rent + Re-invest'], range=['#E76C7E', '#D7D46D', '#406F0F'])),
             tooltip=[
                 alt.Tooltip('scenario_home_price:Q', title='Home Price ($)', format='$,.0f'),
                 alt.Tooltip('Investment:Q', title='Investment Value ($)', format='$,.0f'),
@@ -242,7 +247,20 @@ with tab1:
             height=500,
         )
 
-        st.altair_chart(max_price_chart, use_container_width=True)
+        labels = (
+            alt.Chart(max_price_buy_better_long)
+            .mark_text(align="left", baseline="middle", dx=5, dy=0)
+            .encode(
+            alt.X("scenario_home_price:Q", aggregate="max"),
+            alt.Y("Investment:Q", aggregate="max"),
+            alt.Text("Type:N"),
+            alt.Color(
+            "Type:N", legend=None, scale=alt.Scale(domain=['Buy', 'Rent', 'Rent + Re-invest'], range=['#ffa600', '#d45087', '#a05195'])
+            )
+            )
+        )
+
+        st.altair_chart(max_price_chart + labels, use_container_width=True)
 
 
 with tab2:
