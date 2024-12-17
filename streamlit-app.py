@@ -53,7 +53,8 @@ with st.sidebar:
 
         subcol1, subcol2 = st.columns(2)
         with subcol1:
-            home_cost = st.number_input("Home Purchase Price ($)", value=800000, step=10000, )
+            home_cost = st.number_input("Home Purchase Price ($ thousand)", value=800, step=10000, )
+            home_cost = home_cost * 1000
             interest_rate = st.number_input("Interest Rate (%)", min_value=0.0, max_value=100.0, format="%.1f", value=7.0, step=0.5)
         with subcol2:
             down_payment = st.number_input("Down Payment (%)", min_value=0, max_value=100,  value=20, step=1)
@@ -110,7 +111,7 @@ with tab1:
             # Add a time slider to filter the chart
             year_slider = st.slider("zoom in on years", min_value=1, max_value=30, value=(1, 30))
             scenarios = st.multiselect(
-                "Select Scenarios to Display",
+                "scenarios",
                 options=["Buy", "Rent", "Rent + Re-invest"],
                 default=["Buy", "Rent", "Rent + Re-invest"]
             )
@@ -197,7 +198,7 @@ with tab1:
 
 with tab2:
     
-    st.markdown("**Amortization Schedule**")
+    st.markdown(" ")
 
     # create an altair line chart for interest vs principal payments
     interest_vs_principal_chart_data = amortization_schedule.melt(id_vars=["Payment Number", "Year", "Month"], value_vars=["Principal Payment", "Interest Payment"], var_name="Type", value_name="Amount")
@@ -212,7 +213,7 @@ with tab2:
             alt.Tooltip('Type:N', title='Type')
         ]
     ).properties(
-        title="Interest vs Principal Payments",
+        title="Amortization Schedule",
         height=500,
     )
 
@@ -221,6 +222,21 @@ with tab2:
     # set year and month as multiindex 
     amortization_schedule.set_index(['Year', 'Month'], inplace=True)
 
-    # display the amortization schedule
-    st.dataframe(amortization_schedule[['Principal Payment', 'Interest Payment', 'Remaining Balance', 'Equity (%)']])
+    # Calculate total amount paid, principal paid, and interest paid
+    total_paid = amortization_schedule["Principal Payment"].sum() + amortization_schedule["Interest Payment"].sum()
+    total_principal_paid = amortization_schedule["Principal Payment"].sum()
+    total_interest_paid = amortization_schedule["Interest Payment"].sum()
+    # Calculate down payment amount
+    down_payment_amount = home_cost * (down_payment / 100)
 
+    # Display metrics in four columns
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric(label="Down Payment Amount", value=f"${down_payment_amount:,.0f}")
+    with col2:
+        st.metric(label="Mortgage Amount", value=f"${total_principal_paid:,.0f}")
+    with col3:
+        st.metric(label="Total Amount Paid Over Lifetime", value=f"${total_paid:,.0f}")
+
+    with col4:
+        st.metric(label="Total Interest Paid", value=f"${total_interest_paid:,.0f}")
