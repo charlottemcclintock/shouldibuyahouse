@@ -114,6 +114,7 @@ def calculate_summary_metrics(down_payment, home_cost, interest_rate, loan_term_
     Returns:
     pd.DataFrame: A DataFrame containing the summary of financial metrics for each year.
     """
+    
     loan_amount = home_cost * (1 - down_payment / 100)
 
     monthly_payment = calculate_monthly_mortgage_payment(loan_amount, interest_rate, loan_term_years)

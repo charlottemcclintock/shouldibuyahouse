@@ -76,7 +76,7 @@ with st.sidebar:
             home_price_appreciation = st.number_input("Home Price Appreciation After Inflation (%)", min_value=0.0, max_value=100.0, format="%.1f", value=1.0, step=0.5)
         with subcol2:
             loan_term_years = st.number_input("Loan Term (years)", step=5, value=30, min_value=15)  # Assuming a 30-year mortgage
-            investment_growth = st.number_input("Average Investment Growth (%)", min_value=0.0, max_value=100.0, format="%.1f", value=7.0, step = 0.5, help="Average annual return on investment portfolio after inflation.")
+            investment_growth = st.number_input("Average Investment Growth (%)", min_value=0.0, max_value=100.0, format="%.1f", value=5.0, step = 0.5, help="Average annual return on investment portfolio after inflation.")
 
     st.caption('Note: I built this one afternoon - please flag any bugs or issues! Send all thoughts and feedback to [Charlotte](https://bsky.app/profile/cmcclintock.bsky.social)!')
  
