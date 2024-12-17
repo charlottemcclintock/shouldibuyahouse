@@ -1,0 +1,18 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Karla:ital,wght@0,200..800;1,200..800&display=swap");
+
+body * {
+	font-family: "Inter", sans-serif !important;
+	line-height: 1.35;
+}
+
+header.stAppHeader {
+	background-color: transparent;
+}
+section.stMain .block-container {
+	padding-top: 3rem;
+	z-index: 1;
+}
+
+[data-testid="stDecoration"] {
+	background: #ffffff;
+}
