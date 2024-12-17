@@ -46,7 +46,11 @@ apply_custom_css(custom_css)
 with st.sidebar:
     st.markdown("## Should I Buy a House?")
     st.caption('''I live in a high cost of living area and kept feeling like I *should* buy a house at some point, that it was better than "throwing money away" by renting. Here's my math on when that makes sense. ''')
+
+
+
     st.markdown("#")
+
 
     with st.container(border=True):
         st.markdown("**Buy**")
@@ -74,6 +78,8 @@ with st.sidebar:
         with subcol2:
             investment_growth = st.number_input("Average Investment Growth (%)", min_value=0.0, max_value=100.0, format="%.1f", value=7.0, step = 0.5, help="Average annual return on investment portfolio after inflation.")
             loan_term_years = st.number_input("Loan Term (years)", step=5, value=30, min_value=15)  # Assuming a 30-year mortgage
+            
+    st.warning('I built this about two hours - please flag any bugs or issues! Send all thoughts and feedback to [Charlotte](https://bsky.app/profile/cmcclintock.bsky.social)!', icon="⚠️")
 
 # Example usage
 loan_amount = home_cost * (1 - down_payment / 100)
