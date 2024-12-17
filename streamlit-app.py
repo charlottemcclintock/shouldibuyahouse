@@ -117,8 +117,8 @@ with tab1:
             year_slider = st.slider("zoom in on years", min_value=1, max_value=30, value=(1, 30))
             scenarios = st.multiselect(
                 "scenarios",
-                options=["Buy", "Rent", "Rent + Re-invest"],
-                default=["Buy", "Rent", "Rent + Re-invest"]
+                options=["Buy", "Rent", "Rent + Invest"],
+                default=["Buy", "Rent", "Rent + Invest"]
             )
 
     with investment_graph:
@@ -127,7 +127,7 @@ with tab1:
         filtered_summary_df = summary_df[(summary_df["Year"] >= year_slider[0]) & (summary_df["Year"] <= year_slider[1])]
 
         # melt the dataframe
-        filtered_chart_data = filtered_summary_df.melt(id_vars=["Year"], value_vars=["Investment: Buy", "Investment: Rent", "Investment: Rent + Re-invest"], var_name="Type", value_name="Investment")
+        filtered_chart_data = filtered_summary_df.melt(id_vars=["Year"], value_vars=["Investment: Buy", "Investment: Rent", "Investment: Rent + Invest"], var_name="Type", value_name="Investment")
 
         # clean up the investment types
         filtered_chart_data['Type'] = filtered_chart_data['Type'].str.replace("Investment: ", "")
@@ -139,7 +139,7 @@ with tab1:
         filtered_investment_chart = alt.Chart(filtered_chart_data).mark_line(point=True).encode(
             x=alt.X('Year:Q', title=''),
             y=alt.Y('Investment:Q', title='', axis=alt.Axis(format='$,.0f')),
-            color=alt.Color('Type:N', title='Type', scale=alt.Scale(domain=['Buy', 'Rent', 'Rent + Re-invest'], range=['#E76C7E', '#D7D46D', '#406F0F'])),
+            color=alt.Color('Type:N', title='Type', scale=alt.Scale(domain=['Buy', 'Rent', 'Rent + Invest'], range=['#E76C7E', '#D7D46D', '#406F0F'])),
             tooltip=[
             alt.Tooltip('Year:Q', title='Year'),
             alt.Tooltip('Investment:Q', title='Value ($)', format='$,.0f'),
@@ -161,7 +161,7 @@ with tab1:
             alt.Y("Investment:Q", aggregate="max"),
             alt.Text("Type:N"),
             alt.Color(
-            "Type:N", legend=None, scale=alt.Scale(domain=['Buy', 'Rent', 'Rent + Re-invest'], range=['#ffa600', '#d45087', '#a05195'])
+            "Type:N", legend=None, scale=alt.Scale(domain=['Buy', 'Rent', 'Rent + Invest'], range=['#ffa600', '#d45087', '#a05195'])
             )
             )
         )
@@ -175,7 +175,7 @@ with tab1:
 
     st.markdown(f"*If you rented this house:* You would pay **\\${min(summary_df['Annual Cost of Renting']):,.0f}** in the first year and **\\${max(summary_df['Annual Cost of Renting']):,.0f}** in year 30, with rent increasing by **{rent_increase}%** annually on top of **{inflation}%** inflation. Your costs would increase with inflation. You would not own the home, but you would have invested the **\\${(down_payment + closing_costs)/100*home_cost:,.0f}** you would have spent on a down payment and closing costs, which would be worth **\\${max(summary_df['Investment: Rent']):,.0f}** after **{loan_term_years}** years, based on an average annual return of **{investment_growth}%** after inflation.")
 
-    st.markdown(f"*If you rented this house and reinvested the cost savings:* You would pay **\\${min(summary_df['Annual Cost of Renting']):,.0f}** in the first year and **\\${max(summary_df['Annual Cost of Renting']):,.0f}** in year 30, with rent increasing by **{rent_increase}%** annually on top of **{inflation}%** inflation. Your costs would increase with inflation. You would not own the home, but you would have **{down_payment}%** of the home value invested in the stock market, which would be worth **\\${max(summary_df['Investment: Rent + Re-invest']):,.0f}** after **{loan_term_years}** years, based on an average annual return of **{investment_growth}%** after inflation.")
+    st.markdown(f"*If you rented this house and invested the cost savings:* You would pay **\\${min(summary_df['Annual Cost of Renting']):,.0f}** in the first year and **\\${max(summary_df['Annual Cost of Renting']):,.0f}** in year 30, with rent increasing by **{rent_increase}%** annually on top of **{inflation}%** inflation. Your costs would increase with inflation. You would not own the home, but you would have **{down_payment}%** of the home value invested in the stock market, which would be worth **\\${max(summary_df['Investment: Rent + Invest']):,.0f}** after **{loan_term_years}** years, based on an average annual return of **{investment_growth}%** after inflation.")
 
 
     # display the summary dataframe
@@ -192,32 +192,32 @@ with tab1:
             "Investment: Rent": "${:,.0f}",
             "Annual Cost of Renting": "${:,.0f}",
             "Cost Savings": "${:,.0f}",
-            "Investment: Rent + Re-invest": "${:,.0f}"
+            "Investment: Rent + Invest": "${:,.0f}"
         })
         .applymap(lambda x: 'color: #E76C7E', subset=["Investment: Buy"])
         .applymap(lambda x: 'color: #D7D46D', subset=["Investment: Rent"])
-        .applymap(lambda x: 'color: #406F0F', subset=["Investment: Rent + Re-invest"])
+        .applymap(lambda x: 'color: #406F0F', subset=["Investment: Rent + Invest"])
     )
 
 
     st.dataframe(format_df, height=220)
 
     st.divider()
-    # iterate over home prices to find the max price where buying is better than renting and reinvesting
+    # iterate over home prices to find the max price where buying is better than renting and investing
     df_list = []
     for potential_home_price in range(100000, 2000000, 10000):
         potential_summary_df = calculate_summary_metrics(down_payment, potential_home_price, interest_rate, loan_term_years, home_price_appreciation, inflation, investment_growth, closing_costs, rent, rent_increase)
         potential_summary_df['scenario_home_price'] = potential_home_price
         potential_summary_df = potential_summary_df[potential_summary_df["Year"] == loan_term_years]
-        df_list.append(potential_summary_df[['scenario_home_price', 'Investment: Buy', 'Investment: Rent', 'Investment: Rent + Re-invest']])
+        df_list.append(potential_summary_df[['scenario_home_price', 'Investment: Buy', 'Investment: Rent', 'Investment: Rent + Invest']])
 
     max_price_buy_better = pd.concat(df_list)
 
-    # Find the first scenario home price where investment buy > investment rent and reinvest
-    first_scenario = max_price_buy_better[max_price_buy_better['Investment: Buy'] < max_price_buy_better['Investment: Rent + Re-invest']].iloc[0]
+    # Find the first scenario home price where investment buy > investment rent and invest
+    first_scenario = max_price_buy_better[max_price_buy_better['Investment: Buy'] < max_price_buy_better['Investment: Rent + Invest']].iloc[0]
 
     # Melt the max price dataframe to long format for the chart
-    max_price_buy_better_long = max_price_buy_better.melt(id_vars=['scenario_home_price'], value_vars=['Investment: Buy', 'Investment: Rent', 'Investment: Rent + Re-invest'], var_name='Type', value_name='Investment')
+    max_price_buy_better_long = max_price_buy_better.melt(id_vars=['scenario_home_price'], value_vars=['Investment: Buy', 'Investment: Rent', 'Investment: Rent + Invest'], var_name='Type', value_name='Investment')
 
     # remove investment: from typ
     max_price_buy_better_long['Type'] = max_price_buy_better_long['Type'].str.replace("Investment: ", "")
@@ -225,18 +225,18 @@ with tab1:
     homepricecol1, homepricecol2 = st.columns([3,5])
     with homepricecol1:
         st.markdown("**Max Home Price where Buying > Renting**")
-        st.markdown(f"The home price maximum below is the highest home price (given the input parameters) where the total investment value of buying a home exceeds renting and reinvesting over {loan_term_years} years.  ")
+        st.markdown(f"The home price maximum below is the highest home price (given the input parameters) where the total investment value of buying a home exceeds renting and investing over {loan_term_years} years.  ")
 
         st.metric('Max Home Price Where Buying > Renting', f"${first_scenario['scenario_home_price']:,.0f}")
 
-        st.markdown("The chart at right shows the total investment value of buying, renting, and renting + re-investing for a range of home prices. ")
+        st.markdown("The chart at right shows the total investment value of buying, renting, and renting + investing for a range of home prices. ")
 
     with homepricecol2: 
         # Graph the max price dataframe
         max_price_chart = alt.Chart(max_price_buy_better_long).mark_line(point=True).encode(
             x=alt.X('scenario_home_price:Q', title='Home Price ($)', axis=alt.Axis(format='$,.0f')),
             y=alt.Y('Investment:Q', title='Investment Value ($)', axis=alt.Axis(format='$,.0f')),
-            color=alt.Color('Type:N', title='scenario', scale=alt.Scale(domain=['Buy', 'Rent', 'Rent + Re-invest'], range=['#E76C7E', '#D7D46D', '#406F0F'])),
+            color=alt.Color('Type:N', title='scenario', scale=alt.Scale(domain=['Buy', 'Rent', 'Rent + Invest'], range=['#E76C7E', '#D7D46D', '#406F0F'])),
             tooltip=[
                 alt.Tooltip('scenario_home_price:Q', title='Home Price ($)', format='$,.0f'),
                 alt.Tooltip('Investment:Q', title='Investment Value ($)', format='$,.0f'),
@@ -255,7 +255,7 @@ with tab1:
             alt.Y("Investment:Q", aggregate="max"),
             alt.Text("Type:N"),
             alt.Color(
-            "Type:N", legend=None, scale=alt.Scale(domain=['Buy', 'Rent', 'Rent + Re-invest'], range=['#ffa600', '#d45087', '#a05195'])
+            "Type:N", legend=None, scale=alt.Scale(domain=['Buy', 'Rent', 'Rent + Invest'], range=['#ffa600', '#d45087', '#a05195'])
             )
             )
         )

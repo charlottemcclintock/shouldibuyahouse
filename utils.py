@@ -133,7 +133,7 @@ def calculate_summary_metrics(down_payment, home_cost, interest_rate, loan_term_
         "Annual Cost of Renting": [],
         "Cost Savings": [],
         "Investment: Rent": [],
-        "Investment: Rent + Re-invest": []
+        "Investment: Rent + Invest": []
     }
 
     total_investment_value_rent_reinvest = down_payment / 100 * home_cost
@@ -160,7 +160,7 @@ def calculate_summary_metrics(down_payment, home_cost, interest_rate, loan_term_
         summary_data["Annual Cost of Renting"].append(round(total_annual_cost_renting))
         summary_data["Cost Savings"].append(round(annual_savings_housing_costs))
         summary_data["Investment: Rent"].append(round(total_investment_value_rent))
-        summary_data["Investment: Rent + Re-invest"].append(round(total_investment_value_rent_reinvest))
+        summary_data["Investment: Rent + Invest"].append(round(total_investment_value_rent_reinvest))
 
     summary_df = pd.DataFrame(summary_data)
 
