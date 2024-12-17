@@ -92,7 +92,7 @@ def calculate_amortization_schedule(loan_amount, annual_interest_rate, loan_term
 
     return pd.DataFrame(schedule)
 
-def calculate_summary_metrics(down_payment, home_cost, interest_rate, loan_term_years, home_price_appreciation, inflation, investment_growth, closing_costs, rent, rent_increase, amortization_schedule, monthly_payment, total_monthly_cost_buying):
+def calculate_summary_metrics(down_payment, home_cost, interest_rate, loan_term_years, home_price_appreciation, inflation, investment_growth, closing_costs, rent, rent_increase):
     """
     Calculate and summarize various financial metrics for buying vs renting a home over a specified loan term.
 
@@ -107,13 +107,18 @@ def calculate_summary_metrics(down_payment, home_cost, interest_rate, loan_term_
     closing_costs (float): The closing costs as a percentage of the home cost.
     rent (float): The initial monthly rent.
     rent_increase (float): The annual increase rate of rent.
-    amortization_schedule (pd.DataFrame): The amortization schedule of the mortgage.
-    monthly_payment (float): The monthly mortgage payment.
-    total_monthly_cost_buying (float): The total monthly cost of buying the home.
 
     Returns:
     pd.DataFrame: A DataFrame containing the summary of financial metrics for each year.
     """
+    loan_amount = home_cost * (1 - down_payment / 100)
+
+    monthly_payment = calculate_monthly_mortgage_payment(loan_amount, interest_rate, loan_term_years)
+
+    total_monthly_cost_buying = calculate_monthly_cost_buying(home_cost, monthly_payment)
+
+    # Calculate amortization schedule
+    amortization_schedule = calculate_amortization_schedule(loan_amount, interest_rate, loan_term_years, down_payment, monthly_payment)
 
     summary_data = {
         "Year": [],
