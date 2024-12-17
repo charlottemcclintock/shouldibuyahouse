@@ -93,7 +93,7 @@ amortization_schedule = calculate_amortization_schedule(loan_amount, interest_ra
 
 summary_df = calculate_summary_metrics(down_payment, home_cost, interest_rate, loan_term_years, home_price_appreciation, inflation, investment_growth, closing_costs, rent, rent_increase)
 
-tab1, tab2 = st.tabs(["big picture", "amortization schedule"])
+tab1, tab2 = st.tabs(["big picture", "cost breakdown"])
 
 with tab1:
 
@@ -173,7 +173,7 @@ with tab1:
     st.markdown(f"This scenario compares buying a home at **\\${home_cost:,}** with a **{down_payment}%** down payment to renting a home at **\\${rent:,}** per month.")
     st.markdown(f"*If you bought this house:* You would pay **\\${total_monthly_cost_buying*12:,.0f}** per year, including the mortgage payment, repair costs, property insurance, and homeowners insurance. In year one, you'd also pay **\\${closing_costs/100*home_cost:,.0f}** in closing costs. Your costs would be fixed for **{loan_term_years}** years. After 30 years, you would own **100%** of the home, which would be worth **\\${max(summary_df['Investment: Buy']):,.0f}**, based on **{home_price_appreciation}%** annual appreciation in the value of the home and **{inflation}%** inflation.")
 
-    st.markdown(f"*If you rented this house:* You would pay **\\${min(summary_df['Annual Cost of Renting']):,.0f}** in the first year and **\\${max(summary_df['Annual Cost of Renting']):,.0f}** in year 30, with rent increasing by **{rent_increase}%** annually on top of **{inflation}%** inflation. Your costs would increase with inflation. You would not own the home, but you would have **{down_payment}%** of the home value invested in the stock market, which would be worth **\\${max(summary_df['Investment: Rent']):,.0f}** after **{loan_term_years}** years, based on an average annual return of **{investment_growth}%** after inflation.")
+    st.markdown(f"*If you rented this house:* You would pay **\\${min(summary_df['Annual Cost of Renting']):,.0f}** in the first year and **\\${max(summary_df['Annual Cost of Renting']):,.0f}** in year 30, with rent increasing by **{rent_increase}%** annually on top of **{inflation}%** inflation. Your costs would increase with inflation. You would not own the home, but you would have invested the **\\${(down_payment + closing_costs)/100*home_cost:,.0f}** you would have spent on a down payment and closing costs, which would be worth **\\${max(summary_df['Investment: Rent']):,.0f}** after **{loan_term_years}** years, based on an average annual return of **{investment_growth}%** after inflation.")
 
     st.markdown(f"*If you rented this house and reinvested the cost savings:* You would pay **\\${min(summary_df['Annual Cost of Renting']):,.0f}** in the first year and **\\${max(summary_df['Annual Cost of Renting']):,.0f}** in year 30, with rent increasing by **{rent_increase}%** annually on top of **{inflation}%** inflation. Your costs would increase with inflation. You would not own the home, but you would have **{down_payment}%** of the home value invested in the stock market, which would be worth **\\${max(summary_df['Investment: Rent + Re-invest']):,.0f}** after **{loan_term_years}** years, based on an average annual return of **{investment_growth}%** after inflation.")
 
@@ -270,6 +270,35 @@ with tab2:
     # create an altair line chart for interest vs principal payments
     interest_vs_principal_chart_data = amortization_schedule.melt(id_vars=["Payment Number", "Year", "Month"], value_vars=["Principal Payment", "Interest Payment"], var_name="Type", value_name="Amount")
 
+
+
+
+
+    # Calculate total amount paid, principal paid, and interest paid
+    total_paid = amortization_schedule["Principal Payment"].sum() + amortization_schedule["Interest Payment"].sum()
+    total_principal_paid = amortization_schedule["Principal Payment"].sum()
+    total_interest_paid = amortization_schedule["Interest Payment"].sum()
+    # Calculate down payment amount
+    down_payment_amount = home_cost * (down_payment / 100)
+
+    st.markdown("**Purchase & Mortgage Costs**")
+    # Display metrics in four columns
+    col1, col2, col3, col4, col5 = st.columns(5)
+    with col1:
+        st.metric(label="Down Payment Amount", value=f"${down_payment_amount:,.0f}")
+    with col2:
+        # closing costs
+        st.metric(label="Closing Costs", value=f"${closing_costs/100*home_cost:,.0f}")
+    with col3:
+        st.metric(label="Mortgage Amount", value=f"${home_cost-down_payment_amount:,.0f}")
+    with col4:
+        st.metric(label="Total Paid on Loan", value=f"${total_paid:,.0f}", help="Total principal and interest paid over the life of the loan, does not include down payment or closing costs.")
+
+    with col5:
+        st.metric(label="Total Interest Paid", value=f"${total_interest_paid:,.0f}")
+
+    st.markdown(" ")
+
     interest_vs_principal_chart = alt.Chart(interest_vs_principal_chart_data).mark_line(point=True).encode(
         x='Payment Number:Q',
         y='Amount:Q',
@@ -286,25 +315,19 @@ with tab2:
 
     st.altair_chart(interest_vs_principal_chart, use_container_width=True)
 
-    # set year and month as multiindex 
-    amortization_schedule.set_index(['Year', 'Month'], inplace=True)
+    st.divider()
 
-    # Calculate total amount paid, principal paid, and interest paid
-    total_paid = amortization_schedule["Principal Payment"].sum() + amortization_schedule["Interest Payment"].sum()
-    total_principal_paid = amortization_schedule["Principal Payment"].sum()
-    total_interest_paid = amortization_schedule["Interest Payment"].sum()
-    # Calculate down payment amount
-    down_payment_amount = home_cost * (down_payment / 100)
-
-    # Display metrics in four columns
-    col1, col2, col3, col4 = st.columns(4)
+    # Calculate monthly maintenance, insurance, and property tax costs
+    total_monthly_cost_buying, monthly_repair_cost, monthly_property_tax, monthly_property_insurance  = calculate_monthly_cost_buying(home_cost, monthly_payment, extended=True)
+    st.markdown("**Monthly Costs**")
+    col0, col1, col2, col3, col4 = st.columns(5)
+    with col0:
+        st.metric(label="Total Monthly Cost", value=f"${total_monthly_cost_buying:,.0f}")
     with col1:
-        st.metric(label="Down Payment Amount", value=f"${down_payment_amount:,.0f}")
+        st.metric(label="Mortgage Payment", value=f"${monthly_payment:,.0f}")
     with col2:
-        st.metric(label="Mortgage Amount", value=f"${total_principal_paid:,.0f}")
+        st.metric(label="Maintenance", value=f"${monthly_repair_cost:,.0f}", help="1% of the home value annually set aside for repairs")
     with col3:
-        st.metric(label="Total Amount Paid Over Lifetime", value=f"${total_paid:,.0f}")
-
+        st.metric(label="Insurance", value=f"${monthly_property_insurance:,.0f}")
     with col4:
-        st.metric(label="Total Interest Paid", value=f"${total_interest_paid:,.0f}")
-
+        st.metric(label="Property Tax", value=f"${monthly_property_tax:,.0f}", help="Based on Seattle, WA property tax - 0.9% of the home value annually ([SmartAsset](https://smartasset.com/taxes/washington-property-tax-calculator#bx0Z9LHuTc)).")

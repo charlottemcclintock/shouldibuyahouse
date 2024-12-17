@@ -24,7 +24,7 @@ def calculate_monthly_mortgage_payment(loan_amount, annual_interest_rate, loan_t
     else:
         return loan_amount * (monthly_interest_rate * (1 + monthly_interest_rate) ** number_of_payments) / ((1 + monthly_interest_rate) ** number_of_payments - 1)
 
-def calculate_monthly_cost_buying(home_cost, monthly_payment):
+def calculate_monthly_cost_buying(home_cost, monthly_payment, extended=False):
     """Calculate the total monthly cost of buying a house.
     This function takes into account the monthly mortgage payment, 
     monthly repair costs, monthly property insurance, and monthly 
@@ -38,11 +38,14 @@ def calculate_monthly_cost_buying(home_cost, monthly_payment):
     """
 
     monthly_repair_cost = home_cost * 0.01 / 12
-    monthly_property_insurance = home_cost * 0.009 / 12
+    monthly_property_tax = home_cost * 0.009 / 12
     monthly_homeowners_insurance = 200
 
-    total_monthly_cost_buying = monthly_payment + monthly_repair_cost + monthly_property_insurance + monthly_homeowners_insurance
-    return total_monthly_cost_buying
+    total_monthly_cost_buying = monthly_payment + monthly_repair_cost + monthly_property_tax + monthly_homeowners_insurance
+    if extended:
+        return total_monthly_cost_buying, monthly_repair_cost, monthly_property_tax, monthly_homeowners_insurance
+    else:
+        return total_monthly_cost_buying
 
 def calculate_amortization_schedule(loan_amount, annual_interest_rate, loan_term_years, down_payment_percent, monthly_payment):
     """
@@ -142,7 +145,7 @@ def calculate_summary_metrics(down_payment, home_cost, interest_rate, loan_term_
         total_annual_cost_buying = total_monthly_cost_buying * 12
         if year == 1:
             total_annual_cost_buying += closing_costs / 100 * home_cost
-        total_investment_value_rent = down_payment / 100 * home_cost * (1 + (investment_growth + inflation)/ 100) ** year
+        total_investment_value_rent = (down_payment + closing_costs) / 100 * home_cost * (1 + (investment_growth + inflation)/ 100) ** year
         total_annual_cost_renting = rent * 12 * (1 + (rent_increase + inflation) / 100) ** (year)
         annual_savings_housing_costs =  total_annual_cost_buying - total_annual_cost_renting
 
