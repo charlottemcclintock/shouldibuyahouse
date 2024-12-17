@@ -48,8 +48,7 @@ with st.sidebar:
     st.caption('''I live in a high cost of living area and kept feeling like I *should* buy a house at some point, that it was better than "throwing money away" by renting. Here's my math on when that makes sense. ''')
 
 
-
-    st.markdown("#")
+    st.markdown(" ")
 
 
     with st.container(border=True):
@@ -78,7 +77,8 @@ with st.sidebar:
         with subcol2:
             investment_growth = st.number_input("Average Investment Growth (%)", min_value=0.0, max_value=100.0, format="%.1f", value=7.0, step = 0.5, help="Average annual return on investment portfolio after inflation.")
             loan_term_years = st.number_input("Loan Term (years)", step=5, value=30, min_value=15)  # Assuming a 30-year mortgage
-
+    st.caption('Note: I built this one afternoon - please flag any bugs or issues! Send all thoughts and feedback to [Charlotte](https://bsky.app/profile/cmcclintock.bsky.social)!')
+ 
 
 
 # Example usage
