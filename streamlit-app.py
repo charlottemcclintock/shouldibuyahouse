@@ -34,7 +34,7 @@ def apply_custom_css(css):
 
 
 # use full width of page
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", page_title="Should I Buy a House?")
 
 # apply styling defined in style.css
 apply_custom_css(custom_css)
